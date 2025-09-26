@@ -1,0 +1,65 @@
+# Python-specific
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Model and cache files
+*.bin
+*.cache/
+~/.cache/whisper/
+~/.cache/torch/
+*.pt
+*.pth
+
+# Transcription outputs
+outputs/
+*.txt
+*.json
+live_transcription_*.txt
+
+# System files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs and temporary files
+*.log
+*.log.*
+*.tmp
+temp/
+
+# Dependency lock files (optional, include if you don't want to track them)
+# requirements.txt  # Uncomment if you want to exclude, but you likely want to keep it
+
+# Testing and audio files
+audio_folder/
+sample_audio.wav
+*.mp3
+*.m4a
+
+# Jupyter notebooks (if used)
+*.ipynb
+.ipynb_checkpoints/
+
+# future improvements
+future_improvements.md

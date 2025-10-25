@@ -22,7 +22,7 @@ This project is ideal for developers, researchers, journalists, or anyone handli
 - **GPU Acceleration**: Uses CUDA and cuDNN for fast inference on NVIDIA GPUs; falls back to CPU if GPU is unavailable.
 - **Voice Activity Detection (VAD)**: Automatically skips silent parts for efficient processing.
 - **Error Handling**: Robust handling for file not found, invalid formats, and model loading issues.
-- **Customizable Output**: Saves transcriptions to a specified directory (default: `transcriptions`).
+- **Customizable Output**: Saves transcriptions to a specified directory (default: `outputs`).
 - **Multilingual Support**: Whisper handles over 100 languages with auto-detection.
 
 ## Hardware Requirements and Optimization
@@ -185,7 +185,7 @@ Contributions are welcome! Fork the repository, make changes, and submit a pull 
 
 MIT License
 
-Copyright (c) 2025 \[Your Name or Username\]
+Copyright (c) 2025 \[lmaotrix\]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

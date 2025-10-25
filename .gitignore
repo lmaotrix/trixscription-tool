@@ -52,10 +52,11 @@ temp/
 # requirements.txt  # Uncomment if you want to exclude, but you likely want to keep it
 
 # Testing and audio files
-audio_folder/
-sample_audio.wav
+samples/
 *.mp3
 *.m4a
+*.wav
+
 
 # Jupyter notebooks (if used)
 *.ipynb

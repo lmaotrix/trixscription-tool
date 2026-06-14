@@ -10,6 +10,7 @@ Key advantages:
 - **Efficient**: Optimized for NVIDIA GPUs (e.g., RTX 3050 Laptop GPU) with CUDA acceleration.
 - **Flexible**: Supports various audio formats (WAV, MP3, M4A) via FFmpeg, and multiple Whisper model sizes for trade-offs between speed and accuracy.
 - **Batch Processing**: Transcribe entire directories or stream live audio.
+- **Cross-Platform**: Works on Linux and Windows 11.
 
 This project is ideal for developers, researchers, journalists, or anyone handling audio content who wants an offline solution.
 
@@ -32,7 +33,7 @@ This project is ideal for developers, researchers, journalists, or anyone handli
   - GPU: NVIDIA with CUDA support (e.g., RTX 3050 Laptop GPU with 4GB VRAM).
   - CPU: Intel Core i7 12th Gen or equivalent.
   - RAM: 16GB+.
-  - Storage: Enough space for model downloads (\~145MB for "base" model).
+  - Storage: Enough space for model downloads (~145MB for "base" model).
 
 - **Optimization Notes**:
 
@@ -42,45 +43,60 @@ This project is ideal for developers, researchers, journalists, or anyone handli
     ```python
     model = WhisperModel(args.model, device="cuda", compute_type="int8")
     ```
-  - Expected performance: \~5-10x real-time transcription on RTX 3050 for the "base" model (e.g., 1 minute of audio in 6-12 seconds).
+  - Expected performance: ~5-10x real-time transcription on RTX 3050 for the "base" model (e.g., 1 minute of audio in 6-12 seconds).
 
 ## Installation
 
-### System Dependencies
+### Quick install (recommended)
 
-1. **FFmpeg**: For audio format handling.
+Use the platform install script from the project root. Each script installs FFmpeg (where possible), creates a Python virtual environment, and installs dependencies.
 
-   ```bash
-   yay -S ffmpeg
-   ```
+**Linux (Arch, Debian/Ubuntu, Fedora):**
 
-2. **cuDNN**: For GPU acceleration (NVIDIA only).
+```bash
+chmod +x scripts/install-linux.sh
+./scripts/install-linux.sh
+source venv/bin/activate
+```
 
-   ```bash
-   sudo pacman -S cudnn
-   ```
+**Windows 11 (PowerShell):**
 
-   Verify:
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\scripts\install-windows.ps1
+.\venv\Scripts\Activate.ps1
+```
 
-   ```bash
-   ls /usr/lib | grep cudnn
-   ```
+If PowerShell blocks the script, run the `Set-ExecutionPolicy` line above first, or use:
 
-3. **NVIDIA Drivers** (if using GPU):
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install-windows.ps1
+```
 
-   ```bash
-   yay -S nvidia nvidia-utils
-   ```
+### Manual installation
 
-   Verify:
+#### System dependencies
 
-   ```bash
-   nvidia-smi
-   ```
+| Dependency | Linux | Windows 11 |
+|------------|-------|------------|
+| **FFmpeg** | `sudo pacman -S ffmpeg` (Arch) or `sudo apt install ffmpeg` (Debian/Ubuntu) | `winget install Gyan.FFmpeg` or download from [ffmpeg.org](https://ffmpeg.org/download.html) |
+| **NVIDIA drivers** | `yay -S nvidia nvidia-utils` (Arch) | Install from [NVIDIA](https://www.nvidia.com/Download/index.aspx) or Windows Update |
+| **cuDNN** | `sudo pacman -S cudnn` (Arch) | Bundled with PyTorch CUDA wheels; no separate install usually needed |
+| **Python 3.11+** | `pacman -S python` or `apt install python3 python3-venv` | `winget install Python.Python.3.12` |
 
-### Python Dependencies
+Verify FFmpeg and GPU:
 
-1. **Set Up Virtual Environment**:
+```bash
+# Linux / Windows (in Git Bash or PowerShell)
+ffmpeg -version
+nvidia-smi
+```
+
+#### Python dependencies
+
+1. **Set up virtual environment**:
+
+   **Linux:**
 
    ```bash
    cd ~/projects/trixscription-tool
@@ -88,22 +104,26 @@ This project is ideal for developers, researchers, journalists, or anyone handli
    source venv/bin/activate
    ```
 
-2. **Install Packages**:
+   **Windows 11:**
+
+   ```powershell
+   cd C:\Users\you\projects\trixscription-tool
+   py -3 -m venv venv
+   .\venv\Scripts\Activate.ps1
+   ```
+
+2. **Install packages**:
 
    ```bash
    pip install -r requirements.txt
    pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
    ```
 
-   - `requirements.txt` contents:
+   For CPU-only systems (no NVIDIA GPU):
 
-     ```
-     faster-whisper>=1.0.3
-     torch>=2.5.1
-     torchaudio>=2.5.1
-     sounddevice>=0.5.2
-     numpy>=2.0.0
-     ```
+   ```bash
+   pip install torch torchaudio
+   ```
 
    Verify CUDA:
 
@@ -111,7 +131,7 @@ This project is ideal for developers, researchers, journalists, or anyone handli
    python -c "import torch; print(torch.cuda.is_available())"
    ```
 
-   Should print `True`.
+   Should print `True` when an NVIDIA GPU and drivers are configured correctly.
 
 ## Usage
 
@@ -123,10 +143,11 @@ CLI Audio Transcription Tool using Whisper
 options:
   --file PATH            Path to a single audio file (WAV, MP3, etc.)
   --dir PATH             Directory containing audio files to transcribe
-  --output-dir PATH      Output directory for transcriptions (default: transcriptions)
+  --output-dir PATH      Output directory for transcriptions (default: outputs)
   --live SECONDS         Transcribe live audio for specified seconds
+  --timestamps           Include timestamps in transcription output
   --model {tiny,base,small,medium}
-                         Whisper model size (default: base)
+                         Whisper model size (default: small)
 ```
 
 ### Examples
@@ -145,7 +166,7 @@ options:
    python transcribe.py --dir audio_folder --model base
    ```
 
-   - Processes all WAV/MP3/M4A files in `audio_folder`, saving TXT files in `transcriptions/`.
+   - Processes all WAV/MP3/M4A files in `audio_folder`, saving TXT files in `outputs/`.
 
 3. **Live Microphone Transcription**:
 
@@ -163,15 +184,28 @@ options:
 
 ## Troubleshooting
 
+### Linux
+
 - **cuDNN Errors**: Ensure cuDNN is installed for your CUDA version (e.g., 12.8). Run `sudo ldconfig` and reboot.
 - **CUDA Not Available**: Check NVIDIA drivers with `nvidia-smi`. Reinstall `torch` with the correct index.
-- **VRAM Out of Memory**: Use smaller models or `compute_type="int8"` in the code.
-- **Audio Format Issues**: Ensure FFmpeg is in your PATH (`which ffmpeg`). Test with WAV files first.
 - **Live Mode Fails**: Check microphone settings with `pavucontrol` (install via `yay -S pavucontrol`).
-- **Model Download Fails**: Ensure write permissions in `~/.cache/whisper`. Models download on first run.
 - **Python Version Issues**: If using Python 3.13, switch to 3.11 for better compatibility: `yay -S python311`.
 
-If problems persist, check the GitHub issues or run with CPU fallback: change `device="cuda"` to `device="cpu"` in the code (slower).
+### Windows 11
+
+- **CUDA Not Available**: Run `nvidia-smi` in PowerShell. Reinstall PyTorch with the CUDA index URL, or use CPU-only `pip install torch torchaudio`.
+- **FFmpeg Not Found**: Ensure FFmpeg is in PATH. After `winget install Gyan.FFmpeg`, restart the terminal or add the install directory to PATH.
+- **Script Execution Blocked**: Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` before the install script.
+- **Live Mode Fails**: Open **Settings → System → Sound** and confirm the default input device is set. Close apps that may lock the microphone.
+- **Virtual Environment Activation**: Use `.\venv\Scripts\Activate.ps1` in PowerShell, or `venv\Scripts\activate.bat` in Command Prompt.
+
+### All platforms
+
+- **VRAM Out of Memory**: Use smaller models or `compute_type="int8"` in the code.
+- **Audio Format Issues**: Ensure FFmpeg is in your PATH. Test with WAV files first.
+- **Model Download Fails**: Ensure write permissions in the Whisper cache directory (`~/.cache/whisper` on Linux, `%USERPROFILE%\.cache\whisper` on Windows). Models download on first run.
+
+If problems persist, check the GitHub issues. The app automatically falls back to CPU when CUDA is unavailable (slower but works without a GPU).
 
 ## Contributing
 
@@ -185,7 +219,7 @@ Contributions are welcome! Fork the repository, make changes, and submit a pull 
 
 MIT License
 
-Copyright (c) 2025 \[lmaotrix\]
+Copyright (c) 2025 [lmaotrix]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
